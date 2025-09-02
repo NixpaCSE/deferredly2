@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deferredly | Democratizing Access to Business Education</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script type="module">
+        // Firebase App (the core)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        // Firestore Database
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        // IMPORTANT: Replace with your actual Firebase config object
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        let app, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            console.log("Firebase initialized successfully.");
+        } catch (e) {
+            console.error("Firebase initialization failed. Please check your firebaseConfig. Error:", e);
+        }
+        
+        // Wait for the DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            const waitlistForm = document.getElementById('waitlist-form');
+            const emailInput = document.getElementById('email-input');
+            const successMessage = document.getElementById('success-message');
+            const errorMessage = document.getElementById('error-message');
+
+            if(waitlistForm) {
+                waitlistForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    if (!db) {
+                        console.error("Firestore is not initialized. Cannot submit email.");
+                        errorMessage.textContent = "Service is temporarily unavailable. Please try again later.";
+                        errorMessage.classList.remove('hidden');
+                        successMessage.classList.add('hidden');
+                        return;
+                    }
+
+                    const email = emailInput.value.trim();
+                    
+                    try {
+                        // Add a new document with a generated ID to the "waitlist" collection
+                        const docRef = await addDoc(collection(db, "waitlist"), {
+                            email: email,
+                            timestamp: new Date()
+                        });
+                        console.log("Document written with ID: ", docRef.id);
+                        
+                        // Show success message and clear input
+                        successMessage.classList.remove('hidden');
+                        errorMessage.classList.add('hidden');
+                        emailInput.value = '';
+
+                    } catch (error) {
+                        console.error("Error adding document: ", error);
+                        // Show error message
+                        errorMessage.textContent = "Something went wrong. Please try again.";
+                        errorMessage.classList.remove('hidden');
+                        successMessage.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Mobile menu toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenuButton && mobileMenu) {
+                 mobileMenuButton.addEventListener('click', () => {
+                    mobileMenu.classList.toggle('hidden');
+                });
+            }
+        });
+
+    </script>
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .text-brand {
+            color: #4acee9;
+        }
+        .bg-brand {
+            background-color: #4acee9;
+        }
+        .border-brand {
+            border-color: #4acee9;
+        }
+        .hover-bg-brand-dark:hover {
+            background-color: #3abed9;
+        }
+        .section-padding {
+            padding: 6rem 1.5rem;
+        }
+        @media (max-width: 768px) {
+            .section-padding {
+                padding: 4rem 1.5rem;
+            }
+        }
+        .fade-in {
+            animation: fadeIn 1s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-800 antialiased">
+
+    <!-- Header & Navigation -->
+    <header class="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md z-50 border-b border-gray-200">
+        <div class="container mx-auto px-6 py-4">
+            <nav class="flex items-center justify-between">
+                <!-- Logo -->
+                <a href="#signup" class="flex items-center space-x-2">
+                    <!-- Replace the src with the raw URL to your SVG file on GitHub -->
+                    <img src="https://placehold.co/32x32/4acee9/FFFFFF?text=D" alt="Deferredly Logo" class="w-8 h-8 rounded">
+                    <span class="text-2xl font-bold text-gray-900">Deferredly</span>
+                </a>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#fellowship" class="text-gray-600 hover:text-brand transition-colors">Fellowship</a>
+                    <a href="#mission" class="text-gray-600 hover:text-brand transition-colors">Our Mission</a>
+                    <a href="#community" class="text-gray-600 hover:text-brand transition-colors">Community</a>
+                </div>
+
+                <!-- CTA Button -->
+                <a href="#signup" class="hidden md:inline-block bg-gray-900 text-white font-medium py-2 px-5 rounded-lg hover:bg-gray-700 transition-all duration-300">
+                    Get Free Materials
+                </a>
+                
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-button" class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </nav>
+            
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="hidden md:hidden pt-4">
+                 <a href="#fellowship" class="block py-2 px-4 text-sm text-gray-600 hover:bg-gray-50 rounded-md">Fellowship</a>
+                 <a href="#mission" class="block py-2 px-4 text-sm text-gray-600 hover:bg-gray-50 rounded-md">Our Mission</a>
+                 <a href="#community" class="block py-2 px-4 text-sm text-gray-600 hover:bg-gray-50 rounded-md">Community</a>
+                 <a href="#signup" class="block mt-2 w-full text-center bg-gray-900 text-white font-medium py-2 px-5 rounded-lg hover:bg-gray-700 transition-all duration-300">
+                    Get Free Materials
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="pt-20"> <!-- Padding top to offset fixed header -->
+    
+        <!-- Hero Section -->
+        <section id="signup" class="section-padding text-center fade-in">
+            <div class="container mx-auto max-w-3xl">
+                <h1 class="text-4xl md:text-6xl font-bold tracking-tighter text-gray-900 mb-6">
+                    Democratizing Access to Business Education
+                </h1>
+                <p class="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+                   Get instant access to our free resource library, AI-powered tools, and a community newsletter to help you succeed in deferred MBA programs like HBS 2+2.
+                </p>
+                <form id="waitlist-form" class="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+                    <input type="email" id="email-input" placeholder="Enter your email" required class="flex-grow w-full px-4 py-3 rounded-md border border-gray-300 focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-shadow">
+                    <button type="submit" class="bg-brand text-white font-semibold py-3 px-6 rounded-lg hover-bg-brand-dark transition-all duration-300">
+                        Get Free Materials
+                    </button>
+                </form>
+                <div id="success-message" class="hidden mt-4 text-green-600 font-medium">
+                    Thanks for joining! We'll be in touch soon.
+                </div>
+                 <div id="error-message" class="hidden mt-4 text-red-600 font-medium">
+                    Something went wrong. Please try again.
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Pillars Section -->
+        <section class="section-padding bg-gray-50/70">
+            <div class="container mx-auto">
+                <div class="grid md:grid-cols-3 gap-10 text-center">
+                    <!-- Pillar 1 -->
+                    <div class="fade-in" style="animation-delay: 0.2s;">
+                        <div class="flex items-center justify-center h-16 w-16 bg-brand/10 rounded-full mx-auto mb-4">
+                            <svg class="w-8 h-8 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">AI-Powered Guidance</h3>
+                        <p class="text-gray-600">
+                            Get personalized assistance with essays, applications, and career planning.
+                        </p>
+                    </div>
+                    <!-- Pillar 2 -->
+                    <div class="fade-in" style="animation-delay: 0.4s;">
+                        <div class="flex items-center justify-center h-16 w-16 bg-brand/10 rounded-full mx-auto mb-4">
+                            <svg class="w-8 h-8 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">Pro Bono Mentorship</h3>
+                        <p class="text-gray-600">
+                           Connect with successful deferred MBA applicants who want to pay it forward.
+                        </p>
+                    </div>
+                    <!-- Pillar 3 -->
+                    <div class="fade-in" style="animation-delay: 0.6s;">
+                        <div class="flex items-center justify-center h-16 w-16 bg-brand/10 rounded-full mx-auto mb-4">
+                            <svg class="w-8 h-8 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">Application Tracking</h3>
+                        <p class="text-gray-600">
+                            Stay organized with deadlines, requirements, and progress milestones.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Our Mission Section -->
+        <section id="mission" class="section-padding">
+            <div class="container mx-auto max-w-3xl text-center">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Our Mission</h2>
+                <p class="text-lg text-gray-600">
+                    At Deferredly, we’re committed to expanding opportunity for aspiring MBA candidates from all backgrounds. We’re working to break down barriers to business education by building accessible tools, transparent resources, and a supportive community to help level the playing field.
+                </p>
+            </div>
+        </section>
+
+        <!-- Why Deferred MBA Section -->
+        <section class="section-padding bg-gray-900 text-white">
+            <div class="container mx-auto grid md:grid-cols-2 gap-12 items-center">
+                <div class="fade-in">
+                    <h2 class="text-3xl font-bold mb-4">Why Deferred MBA Programs?</h2>
+                    <p class="text-gray-300 mb-6">
+                        Programs like HBS 2+2, Stanford Deferred Enrollment, and Wharton Moelis Advance Access allow undergraduates to secure their MBA spot early, providing certainty and focus for their early career development.
+                    </p>
+                </div>
+                <div class="space-y-6 fade-in" style="animation-delay: 0.2s;">
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <h3 class="font-semibold text-lg mb-2 text-brand">Secure your MBA spot while in college</h3>
+                        <p class="text-gray-400">Gain 2-4 years of work experience with clarity and confidence.</p>
+                    </div>
+                     <div class="bg-gray-800 p-6 rounded-lg">
+                        <h3 class="font-semibold text-lg mb-2 text-brand">Build a Powerful Network Early</h3>
+                        <p class="text-gray-400">Access to top-tier business school resources and connections before you even start.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Future Leaders Fellowship Section -->
+        <section id="fellowship" class="section-padding">
+            <div class="container mx-auto text-center max-w-3xl">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Future Leaders Fellowship</h2>
+                <p class="text-lg text-gray-600 mb-8">
+                   Our flagship program provides comprehensive support for high-potential students from underrepresented, low-income, or first-generation backgrounds applying to deferred MBA programs. Sign up to get fellowship updates and be notified when applications open.
+                </p>
+                 <a href="#signup" class="bg-gray-900 text-white font-medium py-3 px-6 rounded-lg hover:bg-gray-700 transition-all duration-300">
+                    Get Fellowship Updates
+                </a>
+            </div>
+        </section>
+
+        <!-- Community Section -->
+        <section id="community" class="section-padding  bg-gray-50/70">
+            <div class="container mx-auto text-center max-w-2xl">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Join Our Community</h2>
+                <p class="text-lg text-gray-600 mb-8">
+                    Connect with fellow applicants, mentors, and successful MBA students for real-time support and guidance.
+                </p>
+                <a href="#" class="inline-flex items-center justify-center space-x-3 bg-[#5865F2] text-white font-semibold py-3 px-8 rounded-lg hover:bg-[#4a56d1] transition-all duration-300">
+                    <svg class="w-6 h-6" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>Discord</title><path fill="currentColor" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4464.8254-.6184 1.2525a17.2963 17.2963 0 00-5.4856 0 17.5852 17.5852 0 00-.6184-1.2525.0741.0741 0 00-.0785-.0371A19.7913 19.7913 0 003.683 4.3698a.0741.0741 0 00-.0371.0785c.3363 1.95.8309 4.1247 1.4406 6.2845a18.3684 18.3684 0 005.1611 2.9739.0741.0741 0 00.0864-.0215c.0618-.0537.1097-.1233.1428-.2071a13.826 13.826 0 00-1.5645-2.0993.0741.0741 0 00-.0215-.0864c-.471-.2482-.9139-.5176-1.3283-.7994a.0741.0741 0 01-.0215-.1097c.0215-.0371.0537-.0618.0864-.0785a12.1947 12.1947 0 012.1622-.9242.0741.0741 0 01.1023.0449c.2373.6269.4373 1.2525.5922 1.863a.0741.0741 0 00.0741.0618c.0215 0 .0449-.0074.0618-.0215a13.826 13.826 0 00-1.5645-2.0993.0741.0741 0 00-.0215-.0864c-.471-.2482-.9139-.5176-1.3283-.7994a.0741.0741 0 01-.0215-.1097c.0215-.0371.0537-.0618.0864-.0785a12.1947 12.1947 0 012.1622-.9242.0741.0741 0 01.1023.0449c.2373.6269.4373 1.2525.5922 1.863a.0741.0741 0 00.0741.0618c.0215 0 .0449-.0074.0618-.0215a13.826 13.826 0 00-1.5645-2.0993.0741.0741 0 00-.0215-.0864c-.471-.2482-.9139-.5176-1.3283-.7994a.0741.0741 0 01-.0215-.1097c.0215-.0371.0537-.0618.0864-.0785a12.1947 12.1947 0 012.1622-.9242.0741.0741 0 01.1023.0449c.2373.6269.4373 1.2525.5922 1.863a.0741.0741 0 00.1428.0074 18.3684 18.3684 0 005.1611-2.9739c.6097-2.1598 1.1043-4.3345 1.4406-6.2845a.0741.0741 0 00-.0371-.0785z"/></svg>
+                    <span>Join Our Discord Community</span>
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white">
+        <div class="container mx-auto px-6 py-12">
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Logo and Mission -->
+                <div class="col-span-1">
+                    <a href="#signup" class="flex items-center space-x-2 mb-4">
+                        <!-- The logo is intentionally removed from the footer to keep the code clean as requested -->
+                        <span class="text-lg font-bold text-gray-300">Deferredly</span>
+                    </a>
+                    <p class="text-gray-400 text-sm">
+                        Democratizing access to business education.
+                    </p>
+                </div>
+
+                <!-- Links -->
+                <div class="md:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-8">
+                    <div>
+                        <h3 class="font-semibold text-white tracking-wider uppercase mb-4">Product</h3>
+                        <div class="flex flex-col space-y-2">
+                            <a href="#mission" class="text-gray-400 hover:text-white transition-colors">Our Mission</a>
+                            <a href="#fellowship" class="text-gray-400 hover:text-white transition-colors">Fellowship</a>
+                        </div>
+                    </div>
+                     <div>
+                        <h3 class="font-semibold text-white tracking-wider uppercase mb-4">Community</h3>
+                        <div class="flex flex-col space-y-2">
+                            <a href="#community" class="text-gray-400 hover:text-white transition-colors">Discord</a>
+                        </div>
+                    </div>
+                     <div>
+                        <h3 class="font-semibold text-white tracking-wider uppercase mb-4">Legal</h3>
+                        <div class="flex flex-col space-y-2">
+                            <a href="#" class="text-gray-400 hover:text-white transition-colors">Privacy Policy</a>
+                            <a href="#" class="text-gray-400 hover:text-white transition-colors">Terms of Service</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 border-t border-gray-700 pt-6 text-center text-sm text-gray-500">
+                &copy; 2025 Deferredly. All Rights Reserved.
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
+
+
+
